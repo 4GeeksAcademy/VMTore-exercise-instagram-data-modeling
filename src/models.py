@@ -29,49 +29,51 @@ Base = declarative_base()
 #         return {}
 
 
+Followers = Table(
+    'followers',
+    Base.metadata,
+    Column('follower_id', Integer, ForeignKey('user.ID'), primary_key=True),
+    Column('following_id', Integer, ForeignKey('user.ID'), primary_key=True)
+)
+
 class User(Base):
-    __tablename__ = 'user'
-    id = Column(Integer, primary_key=True, nullable=False)
-    useraname = Column(String(250), nullable=False)
-    firstname = Column(String(250), nullable=False)
-    lastname = Column(String(250), nullable=False)
-    email = Column(String(250), nullable=False)
-
-class Follower(Base):
-    __tablename__ = 'follower'
-    id = Column(Integer, primary_key=True, nullable=False)
-    followed_id = Column(Integer, nullable=False)
-    follower_id = Column(Integer, nullable=False)
-    user_id  = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User) 
-
-class Post(Base):
-    __tablename__ ='post'
-    id = Column(Integer, primary_key=True, nullable=False)
-    user_id = Column(Integer, primary_key=True, nullable=False)
-    user_id  = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User) 
-
-
-class Comment(Base):
-    __tablename__ = 'comment'
-    id = Column(Integer, primary_key=True, nullable=False)
-    comment_text = Column(String(250), nullable=False)
-    author_id = Column(Integer, ForeignKey('user.id'))
-    post_id = Column(Integer, ForeignKey('post.id'))
-    user_id  = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User) 
-    post_id = Column(Integer, ForeignKey('post.id'))
-    post = relationship(Post)
+    __tablename__='user'
+    ID= Column(Integer, primary_key=True)
+    user_name = Column(String(250),nullable=False)
+    first_name = Column(String(250),nullable=False)
+    last_name = Column(String(250),nullable=False)
+    email = Column(String(250),nullable=False)
+    post= relationship('Post', backref='user', lazy=True)
+    comment= relationship('Comment', backref='user', lazy=True)
+    followed = relationship(
+        'User',
+        secondary=Followers,
+        primaryjoin=(Followers.c.following_id==id), # Trae los seguidos
+        secondaryjoin=(Followers.c.follower_id==id), # Trae los que yo sigo
+        backref='following',
+        lazy='True'
+    )
 
 class Media(Base):
-    __tablename__ = 'media'
-    id = Column(Integer, primary_key=True, nullable=False)
-    type = Column(Enum("photo", "video", "reel"), nullable=False)
-    url = Column(String(250), nullable=False)
-    post_media_id = Column(String(250), nullable=False)
-    post_id = Column(Integer, ForeignKey('post.id'))
-    post = relationship(Post)
+    __tablename__= 'media'
+    ID= Column(Integer, primary_key=True)
+    type = Column(Enum('photo','video','reel'),nullable=False)
+    url = Column(String(250),nullable=False)
+    post_id = Column(Integer, ForeignKey('post.ID'))
+    
+class Post(Base):
+    __tablename__='post'
+    ID= Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.ID'))
+    comment= relationship('Comment',backref='post', lazy=True)
+    media= relationship('Media',backref='post', lazy=True)
+
+class Comment(Base):
+    __tablename__='comment'
+    ID= Column(Integer, primary_key=True)
+    comment_text = Column(String(250),nullable=False)
+    author_id = Column(Integer, ForeignKey('user.ID'))
+    post_id = Column(Integer, ForeignKey('post.ID'))
 
 
 ## Draw from SQLAlchemy base
