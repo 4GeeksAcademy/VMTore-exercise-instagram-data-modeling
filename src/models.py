@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Enum
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
 from eralchemy2 import render_er
@@ -48,8 +48,8 @@ class User(Base):
     followed = relationship(
         'User',
         secondary=Followers,
-        primaryjoin=(Followers.c.following_id==id), # Trae los seguidos
-        secondaryjoin=(Followers.c.follower_id==id), # Trae los que yo sigo
+        primaryjoin=(Followers.c.following_id==id), # Seguidos
+        secondaryjoin=(Followers.c.follower_id==id), # Yo sigo
         backref='following',
         lazy='True'
     )
